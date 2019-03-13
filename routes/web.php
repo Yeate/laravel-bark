@@ -2,9 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/ping', 'BarkPushController@ping');
-Route::get('/register', 'BarkPushController@register');
+Route::any('/ping', 'BarkPushController@ping');
+Route::any('/register', 'BarkPushController@register');
 
-Route::get('bark/push','BarkPushController@push');
+Route::any('bark/push','BarkPushController@push');
 
 

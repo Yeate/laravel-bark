@@ -18,6 +18,7 @@ class BarkPushController{
         'copy'=>'',
         'automaticallCopy'=>0
     ];
+    protected $header;
     public function __construct()
     {
         $this->data['push_host']=config('BarkPushConfig.bark_host');
@@ -41,6 +42,9 @@ class BarkPushController{
         $response = Curl::to($barkUrl)->withData( request()->all() )->get();
         return $response;
         
+    }
+    public function test(){
+        dd(Request::header());
     }
     public function setApiKey(String $apiKey){
         $this->data['api_key'] = $apiKey;
@@ -77,8 +81,8 @@ class BarkPushController{
         if ($validator->fails()) {
             throw new \Exception($validator->errors()->first());
         }
-        $toGetUrl = $this->format($data);
-        $response = Curl::to($toGetUrl)->get();
+        list($toGetUrl,$data) = $this->format($data);
+        $response = Curl::to($toGetUrl)->withData($data)->post();
         return $response;
         
     }
@@ -86,10 +90,13 @@ class BarkPushController{
     private function format(Array $data){
         $link = $data['push_host'].'/'.$data['api_key'];
         $link .= isset($data['title'])?'/'.$data['title']:'';
+        $data['copy']=$data['content'];
+        $data['content']=preg_replace('/\n/','%E2%80%A8',$data['content']);
+        $data['content']=preg_replace('/\n\r/','%E2%80%A8',$data['content']);
+        $data['content']=preg_replace('/\s/','',$data['content']);
         $link .= isset($data['content'])?'/'.$data['content']:'';
-        unset($data['push_host'],$data['title'],$data['content']);
-        $query = http_build_query($data , '' , '&');
-        $link .= $query?'?'.$query:'';
-        return link;
+    
+        unset($data['push_host'],$data['title'],$data['content'],$data['api_key']);
+        return [$link,$data];
     }
 }
